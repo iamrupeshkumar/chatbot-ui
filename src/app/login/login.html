@@ -1,0 +1,18 @@
+<h1>{{ title }}</h1>
+      <p>Powered by AI 🤖</p>
+
+      <button
+  mat-stroked-button
+  (click)="login()"
+>
+  @if (isLoading) {
+    <mat-progress-spinner
+      mode="indeterminate"
+      diameter="20"
+      strokeWidth="2"
+    ></mat-progress-spinner>
+  }@else {
+    <span>Login</span>
+  }
+  
+</button>

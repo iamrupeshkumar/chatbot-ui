@@ -1,0 +1,178 @@
+@if (!isOpen()) {
+    <div class="chat-toggle" (click)="toggleChat()">
+    <img src="robot.svg" alt="Chatbot" />
+    </div>
+}@else {
+    <div class="chat-box">
+  <div class="chat-header">
+    <mat-icon>messages</mat-icon> Chat Assistant
+    <!-- <button (click)="toggleChat()">✕</button> -->
+     <mat-icon (click)="toggleChat()">clear</mat-icon>
+     
+  </div>
+
+  <div class="chat-messages">
+    @if (steps()==1) {
+<div class="chat-info">
+        <h4>Welcome to BSPRI</h4>
+        <p>Hi, I am your BSPRI Assistant.<br>How may I help you today?<br><br>Ask me anything about BSPRI!</p>
+        <button mat-flat-button (click)="getStarted()">GET STARTED</button>
+    </div>
+    
+    } @else if (steps() == 2) {
+        <div class="input-container">
+  <mat-form-field appearance="fill" class="full-width-input">
+    <mat-label>Enter your email</mat-label>
+    <input matInput
+      type="email"
+      [value]="userEmail()"
+      (input)="userEmail.set($any($event.target).value)"/>
+  </mat-form-field>
+
+   <button mat-stroked-button (click)="submitEmail2()" [disabled]="loading()" class="submit-button-with-spinner">
+  @if (loading()) {
+    <mat-progress-spinner
+    mode="indeterminate"
+    diameter="16"
+    strokeWidth="2"
+    class="spinner-inline">
+  </mat-progress-spinner>
+  <span>Submitting...</span>
+  }@else {
+    <span>Submit</span>
+  }
+  
+</button>
+
+
+</div>
+
+    } @else if (steps()==3) {
+        <div class="input-container">
+  <div class="form-container">
+
+  <div class="dropdown-row">
+    <!-- District dropdown -->
+    <mat-form-field appearance="fill" class="half-width-input">
+      <mat-label>Select District</mat-label>
+      <mat-select [value]="selectedDistrictId()" (selectionChange)="selectedDistrictId.set($event.value)">
+        <mat-option *ngFor="let district of districts()" [value]="district.dis_id">
+          {{ district.dis_name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+
+    <!-- Taluka dropdown -->
+    <mat-form-field appearance="fill" class="half-width-input">
+      <mat-label>Select Taluka</mat-label>
+      <mat-select [value]="selectedTalukaId()" (selectionChange)="selectedTalukaId.set($event.value)">
+        <mat-option *ngFor="let taluka of talukas()" [value]="taluka.taluka_id">
+          {{ taluka.taluka_name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="half-width-input">
+      <mat-label>Select village/city</mat-label>
+      <mat-select [value]="selectedVillCityType()" (selectionChange)="selectedVillCityType.set($event.value)">
+        <mat-option [value]="'Village'"> Village </mat-option>
+        <mat-option [value]="'City'"> City </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="half-width-input">
+      <mat-label>Select {{selectedVillCityType()}}</mat-label>
+      <mat-select [value]="selectedVillCityId()" (selectionChange)="selectedVillCityId.set($event.value)">
+        @for (vc of villagesCities(); track $index) {
+        <mat-option [value]="vc.village_city_id"> {{ vc.village_city_name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="half-width-input">
+      <mat-label>Select {{selectedVillCityType().trim() === 'village' ? 'Panchayat' : 'Municipal'}}</mat-label>
+      <mat-select [value]="selectedMunicipalitiesId()" (selectionChange)="selectedMunicipalitiesId.set($event.value)">
+        @for (vc of municipalities(); track $index) {
+        <mat-option [value]="vc.municipal_gp_id"> {{ vc.municipal_gp_name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+</div>
+
+
+   <button mat-stroked-button (click)="formSubmitted()" [disabled]="loading()" class="submit-button-with-spinner">
+  @if (loading()) {
+    <mat-progress-spinner
+    mode="indeterminate"
+    diameter="16"
+    strokeWidth="2"
+    class="spinner-inline">
+  </mat-progress-spinner>
+  <span>Submitting...</span>
+  }@else {
+    <span>Submit</span>
+  }
+  
+</button>
+
+
+</div>
+    }@else {
+      <div class="chat-container">
+        @for (msg of messages(); track $index) {
+        <div class="chat-message" [class.user]="msg.sender === 'user'" [class.bot]="msg.sender === 'bot'">
+          @if (!msg.typing) {
+            @if (!msg.fileBlobUrl && !msg.fileName) {
+              {{ msg.text }}
+            }@else if(msg.fileBlobUrl && msg.fileName){
+              <div class="download-file">
+                <mat-icon class="file-icon">description</mat-icon>
+                <span class="file-name">{{ msg.fileName }}</span>
+                <button mat-icon-button (click)="downloadFile(msg.fileBlobUrl, msg.fileName)">
+                  <mat-icon>download</mat-icon>
+                </button>
+              </div>
+            }
+            @if (msg.buttons?.length) {
+              <div class="button-group">
+                @for (btn of msg.buttons; track $index) {
+                  <button mat-stroked-button appearance="outlined" class="small-button">{{ btn }}</button>
+                }
+              </div>
+            }
+          } @else {
+            <div class="typing-indicator">
+              <span></span><span></span><span></span>
+            </div>
+          }
+          
+        </div>
+        
+      }
+      </div>
+      <div #bottom></div>
+
+    }
+    
+
+    <!--  -->
+    
+  </div>
+
+  @if (steps() === 4) {
+    <div class="chat-input">
+    <input
+  [value]="userInput()"
+  (input)="userInput.set($any($event.target).value)"
+  (keydown.enter)="sendMessage()"
+  placeholder="Ask anything..." />
+    <button (click)="sendMessage()">
+      <mat-icon aria-hidden="true">send</mat-icon></button>
+  </div>
+  }
+</div>
+}
+
+

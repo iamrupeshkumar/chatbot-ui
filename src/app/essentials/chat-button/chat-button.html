@@ -1,0 +1,9 @@
+<button class="floating-button" (click)="toggleModal()">
+  <img src="robot.svg" alt="Robot" />
+</button>
+
+@if (isOpen()) {
+    <!-- <app-chatbot-modal (close)="toggleModal()"></app-chatbot-modal> -->
+     <app-floating-chat (close)="toggleModal()"></app-floating-chat>
+}
+
